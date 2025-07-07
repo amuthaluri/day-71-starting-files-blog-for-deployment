@@ -11,14 +11,19 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
 # Optional: add contact me email functionality (Day 60)
 # import smtplib
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
 
 app = Flask(__name__)
 bootstrap = Bootstrap(app)
-app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
 ckeditor = CKEditor(app)
 
-
+app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("SQLALCHEMY_DATABASE_URI")
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+print("SQLALCHEMY_DATABASE_URI:", app.config['SQLALCHEMY_DATABASE_URI'])
 
 # Configure Flask-Login
 login_manager = LoginManager()
@@ -27,8 +32,10 @@ login_manager.init_app(app)
 
 @login_manager.user_loader
 def load_user(user_id):
-    return db.get_or_404(User, user_id)
+    return db.session.get(User, int(user_id))
 
+print("SECRET_KEY:", app.config['SECRET_KEY'])
+print("SQLALCHEMY_DATABASE_URI:", app.config['SQLALCHEMY_DATABASE_URI'])
 
 # For adding profile images to the comment section
 import hashlib
@@ -43,7 +50,6 @@ def gravatar_url(email, size=100):
 # CREATE DATABASE
 class Base(DeclarativeBase):
     pass
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///posts.db'
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
 
@@ -286,4 +292,4 @@ def contact():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5001)
+    app.run(debug=False, port=5001)
