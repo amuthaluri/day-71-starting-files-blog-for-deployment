@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: flask-blog
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn main:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: SECRET_KEY
+        generateValue: true
+      - key: SQLALCHEMY_DATABASE_URI
+        fromDatabase:
+          name: flask-blog-db
+          property: connectionString
+
+databases:
+  - name: flask-blog-db
+    plan: free 
